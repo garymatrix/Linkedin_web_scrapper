@@ -50,4 +50,7 @@ def main():
     last_name = input("Enter last name: ")
     data = linkedin_search(first_name, last_name)
     save_csv(data)
+    
+if __name__ == "__main__":
+    main()
 
