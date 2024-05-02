@@ -3,14 +3,28 @@ import csv
 
 def linkedin_search(first_name, last_name):
     token_url = 'https://www.linkedin.com/oauth/v2/accessToken'
-    data = {
-        'client_id': '77ke0cd350gbs3',
-        'client_secret': 'Ax3g7xENqFU2cVhz',
+    data = { 
         'grant_type': 'client_credentials',
-        'Content-Type': 'application/web_scrapper',
+        'client_id': '77neftb6ngfgo0',
+        'client_secret': 'R0im1KwnmvId164g',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'redirect_uri': 'https://www.linkedin.com/in/garymatrix/'
     }
-    access_token = requests.post(token_url, data=data)  # The access token that has to be generated using the POST command
-    #print(access_token)
+    response = requests.post(token_url, data=data)  
+
+    if response.status_code==200:
+        try:
+         access_token = response.json()['access_token']
+        except KeyError:
+         print("Acess token not found")
+         print (response.json)
+         return None
+    else:
+        print(f"Failed to retrieve acess token. Status Code: {response.status_code}")
+        print("Response:", response.text)
+        return None
+
+
     url = f'https://api.linkedin.com/v2/people-search?q=fullName&firstName={first_name}&lastName={last_name}'
     headers = {
         'Authorization': f'Bearer {access_token}',
