@@ -1,53 +1,36 @@
 import requests
 import csv
 
-def linkedin_search(first_name, last_name):
-    token_url = 'https://www.linkedin.com/oauth/v2/accessToken'
-    data = { 
-        'grant_type': 'client_credentials',
-        'client_id': '77neftb6ngfgo0',
-        'client_secret': 'R0im1KwnmvId164g',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'redirect_uri': 'https://www.linkedin.com/in/garymatrix/'
-    }
-    response = requests.post(token_url, data=data)  
+def linkedin_search(first_name, last_name, access_token):
 
-    if response.status_code==200:
-        try:
-         access_token = response.json()['access_token']
-        except KeyError:
-         print("Acess token not found")
-         print (response.json)
-         return None
-    else:
-        print(f"Failed to retrieve acess token. Status Code: {response.status_code}")
-        print("Response:", response.text)
-        return None
-
-
-    url = f'https://api.linkedin.com/v2/people-search?q=fullName&firstName={first_name}&lastName={last_name}'
+    #url = f'https://api.linkedin.com/v2/people-search?q=fullName&firstName={first_name}&lastName={last_name}' #previous url
+    url = 'https://api.linkedin.com/v2/people' #url 
     headers = {
-        'Authorization': f'Bearer {access_token}',
-        'Content-Type': 'application/json'
+        'Authorization': f'Bearer {access_token}', #default as specified by the api
+        'Content-Type': 'application/json' #content needs to be fetched in json
     }
-    response = requests.get(url, headers=headers)
+    parameters = {
+        'q': f'firstName:{first_name} AND lastName:{last_name}', #query parameters, passed seperately instead of specifying them in the url
+        'projection': '(id,firstName,lastName,publicProfileUrl, headline, location, industryName)' 
+    }
+    response = requests.get(url, headers=headers, params= parameters)
     if response.status_code == 200:
-        data = response.json()
+        data = response.json() 
         profiles = []
         for person in data['elements']:
             profile = {
-                'Name': f"{person['firstName']} {person['lastName']}",
+                'Name': f"{person['firstName']} {person['lastName']}", #extraction of each element seperately
                 'Profile URL': person['publicProfileUrl'],
                 'Headline': person['headline'],
                 'Location': person['location']['name'],
                 'Industry': person['industryName'],
             }
-            profiles.append(profile)
+            profiles.append(profile) #saving profile elements in the list
         return profiles
     else:
-        print("Error", response.status_code)
+        print("Error", response.status_code) 
 
-def save_csv(data):
+def save_csv(data):           #function to save all of the data extracted in csv file
     if data:
         csv_file = 'profiles.csv'
         fields = ['Name', 'Profile URL', 'Headline', 'Location', 'Industry' ]
@@ -59,12 +42,12 @@ def save_csv(data):
     else:
         print("Operation unsuccessful")
 
-def main():
+def main():                                                    
     first_name = input("Enter first name: ")
     last_name = input("Enter last name: ")
-    data = linkedin_search(first_name, last_name)
+    access_token = '' #Direct acess token provided by LinkedIn's api
+    data = linkedin_search(first_name, last_name, access_token)
     save_csv(data)
     
 if __name__ == "__main__":
     main()
-
